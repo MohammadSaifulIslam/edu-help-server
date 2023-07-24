@@ -28,6 +28,7 @@ async function run() {
 
     const collegeCoection = client.db("eduHelpDb").collection("colleges");
     const usersCoection = client.db("eduHelpDb").collection("users");
+    const admissionCoection = client.db("eduHelpDb").collection("admission");
 
     // save user's information
     app.put("/users/:email", async (req, res) => {
@@ -46,11 +47,7 @@ async function run() {
       if (isExist) {
         return;
       } else {
-        const result = await usersCoection.updateOne(
-          user,
-          updateUser,
-          options
-        );
+        const result = await usersCoection.updateOne(user, updateUser, options);
         res.send(result);
       }
     });
@@ -60,13 +57,21 @@ async function run() {
       const result = await collegeCoection.find().toArray();
       res.send(result);
     });
-    app.get('/colleges/:id', async(req, res)=>{
-      const {id }= req.params
-      const query = {_id : new ObjectId(id)}
-      const result = await collegeCoection.findOne(query)
-      res.send(result)
-    })
 
+    // single college details
+    app.get("/colleges/:id", async (req, res) => {
+      const { id } = req.params;
+      const query = { _id: new ObjectId(id) };
+      const result = await collegeCoection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/apply-form", async (req, res) => {
+      const applyInfo = req.body;
+      console.log(applyInfo);
+      const result = await admissionCoection.insertOne(applyInfo);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
