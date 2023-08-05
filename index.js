@@ -26,9 +26,10 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const collegeCoection = client.db("eduHelpDb").collection("colleges");
-    const usersCoection = client.db("eduHelpDb").collection("users");
-    const admissionCoection = client.db("eduHelpDb").collection("admission");
+    const collegeCollection = client.db("eduHelpDb").collection("colleges");
+    const usersCollection = client.db("eduHelpDb").collection("users");
+    const admissionCollection = client.db("eduHelpDb").collection("admission");
+    const researchCollection = client.db("eduHelpDb").collection("researches");
 
     // save user's information
     app.put("/users/:email", async (req, res) => {
@@ -43,18 +44,18 @@ async function run() {
         },
       };
 
-      const isExist = await usersCoection.findOne(query);
+      const isExist = await usersCollection.findOne(query);
       if (isExist) {
         return;
       } else {
-        const result = await usersCoection.updateOne(user, updateUser, options);
+        const result = await usersCollection.updateOne(user, updateUser, options);
         res.send(result);
       }
     });
 
     // get all college
     app.get("/colleges", async (req, res) => {
-      const result = await collegeCoection.find().toArray();
+      const result = await collegeCollection.find().toArray();
       res.send(result);
     });
 
@@ -62,16 +63,41 @@ async function run() {
     app.get("/colleges/:id", async (req, res) => {
       const { id } = req.params;
       const query = { _id: new ObjectId(id) };
-      const result = await collegeCoection.findOne(query);
+      const result = await collegeCollection.findOne(query);
       res.send(result);
     });
 
     app.post("/apply-form", async (req, res) => {
       const applyInfo = req.body;
       console.log(applyInfo);
-      const result = await admissionCoection.insertOne(applyInfo);
+      const result = await admissionCollection.insertOne(applyInfo);
       res.send(result);
     });
+
+
+    app.get('/my-colleges/:email', async(req,res)=> {
+      const {email} = req.params;
+      const query = {email: email}
+      const result = await admissionCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    // research routes 
+    app.get('/researches', async(req,res)=>{
+      const result = await researchCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/research/:id', async(req,res)=>{
+      const {id } = req.params;
+      const query = {_id : new ObjectId(id)}
+      const result = await researchCollection.findOne(query)
+      res.send(result)
+    })
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
