@@ -30,6 +30,7 @@ async function run() {
     const usersCollection = client.db("eduHelpDb").collection("users");
     const admissionCollection = client.db("eduHelpDb").collection("admission");
     const researchCollection = client.db("eduHelpDb").collection("researches");
+    const reviewCollection = client.db("eduHelpDb").collection("reviews");
 
     // save user's information
     app.put("/users/:email", async (req, res) => {
@@ -67,12 +68,20 @@ async function run() {
       res.send(result);
     });
 
+    // ----------------admission apis---------------------
     app.post("/apply-form", async (req, res) => {
       const applyInfo = req.body;
       console.log(applyInfo);
       const result = await admissionCollection.insertOne(applyInfo);
       res.send(result);
     });
+
+    app.get('/admission/:id', async (req, res)=> {
+      const {id} = req.params;
+      const query = {_id : new ObjectId(id)}
+      const result = await admissionCollection.findOne(query);
+      res.send(result)
+    })
 
 
     app.get('/my-colleges/:email', async(req,res)=> {
@@ -83,7 +92,7 @@ async function run() {
     })
 
 
-    // research routes 
+    // -------------------research apis------------------- 
     app.get('/researches', async(req,res)=>{
       const result = await researchCollection.find().toArray();
       res.send(result);
@@ -97,6 +106,19 @@ async function run() {
     })
 
 
+
+    // -----------------review apis-----------------
+    app.get('/reviews', async(req,res)=>{
+      const result = await reviewCollection.find().sort({time : -1}).toArray();
+      res.send(result);
+    })
+
+    app.post('/reviews',async (req,res)=>{
+      const feedback = req.body;
+
+      const result = await reviewCollection.insertOne(feedback);
+      res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
